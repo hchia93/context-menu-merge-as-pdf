@@ -7,6 +7,7 @@ from typing import List, Union
 from datetime import datetime
 from PIL import Image
 from PyPDF2 import PdfReader, PdfWriter
+import ctypes
 
 # Setup logging
 LOG_FILE = Path(__file__).parent / "merge-pdf-debug.log"
@@ -21,6 +22,18 @@ def log(message):
             f.write(log_msg + "\n")
     except:
         pass
+
+def show_error(title, message):
+    """Show Windows error message box"""
+    ctypes.windll.user32.MessageBoxW(0, message, title, 0x10)  # 0x10 = MB_ICONERROR
+
+def show_success(title, message):
+    """Show Windows success message box"""
+    ctypes.windll.user32.MessageBoxW(0, message, title, 0x40)  # 0x40 = MB_ICONINFORMATION
+
+def show_warning(title, message):
+    """Show Windows warning message box"""
+    ctypes.windll.user32.MessageBoxW(0, message, title, 0x30)  # 0x30 = MB_ICONWARNING
 
 # Log the arguments
 log(f"sys.argv: {sys.argv}")
@@ -131,7 +144,7 @@ def handle_auto_mode(inputs: List[str]):
         
         if not inputs:
             log("No inputs provided.")
-            input("Press Enter to exit...")
+            show_error("Merge PDF", "No input files or folders provided.")
             return
         
         paths = [Path(p).expanduser().resolve() for p in inputs]
@@ -152,7 +165,7 @@ def handle_auto_mode(inputs: List[str]):
 
         if not files and not dirs:
             log("No valid inputs found.")
-            input("Press Enter to exit...")
+            show_error("Merge PDF", "No valid PDF or image files found.\n\nSupported formats: PDF, PNG, JPG, JPEG")
             return
 
         writer = PdfWriter()
@@ -161,37 +174,45 @@ def handle_auto_mode(inputs: List[str]):
         # Add individual files
         for f in sorted(files):
             log(f"Adding file: {f.name}")
-            if f.suffix.lower() in ['.png', '.jpg', '.jpeg']:
-                add_image(writer, f)
-                page_count += 1
-            elif f.suffix.lower() == '.pdf':
-                reader = PdfReader(str(f))
-                pages = len(reader.pages)
-                add_pdf(writer, f, None)
-                page_count += pages
-                log(f"  -> Added {pages} pages from PDF")
+            try:
+                if f.suffix.lower() in ['.png', '.jpg', '.jpeg']:
+                    add_image(writer, f)
+                    page_count += 1
+                elif f.suffix.lower() == '.pdf':
+                    reader = PdfReader(str(f))
+                    pages = len(reader.pages)
+                    add_pdf(writer, f, None)
+                    page_count += pages
+                    log(f"  -> Added {pages} pages from PDF")
+            except Exception as e:
+                log(f"Error processing {f.name}: {e}")
+                show_warning("Processing Warning", f"Failed to process file:\n{f.name}\n\nContinuing with remaining files...")
 
         # Add contents from folders
         for d in dirs:
             log(f"Adding contents from folder: {d.name}")
             folder_files = sorted(d.glob("*"))
             for file in folder_files:
-                if file.suffix.lower() in ['.png', '.jpg', '.jpeg']:
-                    log(f"  - {file.name}")
-                    add_image(writer, file)
-                    page_count += 1
-                elif file.suffix.lower() == '.pdf':
-                    log(f"  - {file.name}")
-                    reader = PdfReader(str(file))
-                    pages = len(reader.pages)
-                    add_pdf(writer, file, None)
-                    page_count += pages
+                try:
+                    if file.suffix.lower() in ['.png', '.jpg', '.jpeg']:
+                        log(f"  - {file.name}")
+                        add_image(writer, file)
+                        page_count += 1
+                    elif file.suffix.lower() == '.pdf':
+                        log(f"  - {file.name}")
+                        reader = PdfReader(str(file))
+                        pages = len(reader.pages)
+                        add_pdf(writer, file, None)
+                        page_count += pages
+                except Exception as e:
+                    log(f"Error processing {file.name}: {e}")
+                    # Continue silently for folder batch processing
 
         log(f"Total pages to merge: {page_count}")
 
         if page_count == 0:
             log("No valid PDF/image content found to merge.")
-            input("Press Enter to exit...")
+            show_error("Merge PDF", "No valid content found to merge.\n\nMake sure the selected files/folders contain PDF or image files.")
             return
 
         # Decide output directory
@@ -218,6 +239,12 @@ def handle_auto_mode(inputs: List[str]):
 
         log(f"Successfully merged {page_count} pages into: {output_path}")
         
+        # Show success message
+        show_success(
+            "Merge PDF - Success", 
+            f"Successfully merged {page_count} page(s)\n\nOutput: {output_path.name}\nLocation: {base_dir}"
+        )
+        
         # Open the generated PDF
         try:
             os.startfile(str(output_path))
@@ -225,14 +252,11 @@ def handle_auto_mode(inputs: List[str]):
         except Exception as e:
             log(f"Could not open PDF automatically: {e}")
         
-        # Keep window open for 2 seconds to show success message
-        import time
-        time.sleep(2)
-        
     except Exception as e:
+        error_msg = f"An unexpected error occurred:\n\n{str(e)}\n\nCheck merge-pdf-debug.log for details."
         log(f"FATAL ERROR in handle_auto_mode: {e}")
         log(f"Traceback: {traceback.format_exc()}")
-        input("Press Enter to exit...")
+        show_error("Merge PDF - Error", error_msg)
 
 
 def main():
@@ -253,11 +277,13 @@ def main():
         if args.merge:
             if not args.output:
                 log("Output path required for -merge mode.")
+                show_error("Merge PDF", "Output path (-o) is required for -merge mode.")
                 return
             handle_merge_mode(args.merge, args.output)
         elif args.blob:
             if not args.output:
                 log("Output path required for -blob mode.")
+                show_error("Merge PDF", "Output path (-o) is required for -blob mode.")
                 return
             handle_blob_mode(args.blob, args.output)
         elif args.auto:
@@ -266,9 +292,10 @@ def main():
             parser.print_help()
             
     except Exception as e:
+        error_msg = f"Fatal error:\n\n{str(e)}\n\nCheck merge-pdf-debug.log for details."
         log(f"FATAL ERROR in main: {e}")
         log(f"Traceback: {traceback.format_exc()}")
-        input("Press Enter to exit...")
+        show_error("Merge PDF - Fatal Error", error_msg)
 
 
 if __name__ == "__main__":

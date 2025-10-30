@@ -27,13 +27,13 @@ Supported format: `pdf`, `png`, `jpeg`, `jpg`.
     cd context-menu-merge-as-pdf
     ```
 
-2. Install dependencies by running the following in terminal. This should include registration to context menu.
+2. Run the installer. Run `install.bat` as administrator. This will:
 
-    ```bash
-    install.bat
-    ```
+    - Install Python dependencies
+    - Register context menu entries
+    - Set up the icon
 
-3. Repair context menu related with `Admin` right if necessarily.
+3. Repair context menu with `repair-context.bat` as adminstrator if necessarily.
 
     ```bash
     repair-context.bat
@@ -42,7 +42,6 @@ Supported format: `pdf`, `png`, `jpeg`, `jpg`.
 ### Verification
 
 After installation, you should see:
-
 
 ```bash
 "Merge PDF (files)" when right-clicking on files
