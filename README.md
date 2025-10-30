@@ -1,74 +1,86 @@
-# context-menu-merge-as-pdf
-
-Allow user to merge documents or convert folder into a single output PDF.
+# Context Menu Merge as PDF
+A lightweight Windows utility that adds right-click context menu options to merge PDF files and images into a single PDF document. Supports selective page extraction and batch conversion from folders.
 
 Supported format: `pdf`, `png`, `jpeg`, `jpg`.
 
 # Feature
-For non-auto mode:
-- Merge multiple files into one `pdf`
-- Extract certain pages from source `pdf`
+- **Right-click Context Menu Integration** : Merge files directly from Windows Explorer
+- **Common format Support** : Works with `PDF`, `PNG`, `JPEG`, and `JPG` files
+- **Selective Page Extraction** : Choose specific pages or page ranges from PDF files
+- **Batch Processing** : Convert entire folders of documents into a single PDF
+- **Smart Auto-detection**: Handles mixed selections of files and folders intelligently
+- **Zero Configuration** : Auto-generates output in sensible locations
 
 ## Installation
 
 - Install Python 3.6+
 - Install dependencies by running this file in terminal.
 
-```bat
-install.bat
+### Setup
+1. Clone or download this repository
+
+    ```bash   
+    git clone https://github.com/yourusername/context-menu-merge-as-pdf.git
+    cd context-menu-merge-as-pdf
+    ```
+
+2. Install dependencies by running the following in terminal:
+    ```bash   
+    install.bat
+    ```
+3. Run context related script with `Admin` right
+    ```bash
+    register.bat    # Install it to context menu.
+    unregister.bat  # Uninstall from context menu.
+    ```
+### Verification
+After installation, you should see:
+
+```
+"Merge PDF (files)" when right-clicking on files
+"Merge PDF (folder)" when right-clicking on folders
 ```
 
-## Context Menu Installation
-- To register, execute this file with Admin right
+## Command Line 
+
+### Usage
+
+#### 1. Merge with Page Selection
 ```bash
-register.bat
+python merge-pdf.py -merge "document.pdf [1,3:5]" "image.png" -o "output.pdf"
 ```
+This merges:
 
-- To unregister, execute this file with Admin right
+Page 1 from `document.pdf` + Pages 3-5 from `document.pdf` + `image.png` into `"output.pdf"`
+
+#### 2. Batch Merge
 ```bash
-unregister.bat
+python merge-pdf.py -blob "C:\Documents\MyFolder" -o "output.pdf"
 ```
+Merges all supported files in the folder alphabetically.
 
+#### 3. Auto
+```bash
+python merge-pdf.py -auto "C:\path\to\folder"
+python merge-pdf.py -auto "file1.pdf" "file2.png"
+```
+Automatically detects whether inputs are files or folders and handles them appropriately.
 
-## Command
+### Reference
 
-| Command | Description | 
-|---------|--|
-| `-merge`  | Merge multiple files into one pdf. Optionally support page selection and page range selection for `pdf` files. |
-| `-blob `  | Merge every supported files into one pdf by specifiying the source directory. Merged content are ordered alphabetically. | 
-| `-auto` | Convert or Create selected files / folder as pdf. |
+| Command | Description | Requires -o
+|---------|--|--|
+| `-merge`  | Merge specific files with optional page selection | Yes |
+| `-blob `  | Merge all files in a directory alphabetically | Yes
+| `-auto` | Auto-detect and merge files/folders | No |
 
 > All of the above uses absolute file path or absolute directory path.
 
-## Example
-`-merge`  
+## Troubleshooting
+1. Context menu not appearing
+    - Ensure you ran register.bat as Administrator
+    - Restart Windows Explorer (Task Manager → Windows Explorer → Restart)
 
-Format:
-### 
-```cmd
-python merge-pdf.py -merge <file1> <file2> -o <outputfile>
-```
-Use case:
-```cmd
-python merge-pdf.py -merge "example.png [1, 3:5]" -o "../output.pdf"
-```
-The target file will have page 1, page 3 to page5.
-
----
-
-`-blob` 
-
-Use case:
-```cmd
-python merge-pdf.py -blob <directory> -o <outputfile>
-```
-
-`-auto`
-
-```cmd
-python merge-pdf.py -auto "E:\work\myfolder"
-```
-To merge several specific files into a single PDF (output will be 'merged.pdf' in the same directory):
-```cmd
-python merge-pdf.py -auto "E:\a.pdf" "E:\b.pdf"
-```
+2. Script crashes immediately
+    - Check merge-pdf-debug.log in the script directory for error details
+    - Ensure Python and all dependencies are properly installed
