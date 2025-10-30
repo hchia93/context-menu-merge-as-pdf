@@ -16,7 +16,6 @@ Supported format: `pdf`, `png`, `jpeg`, `jpg`.
 ## Installation
 
 - Install Python 3.6+
-- Install dependencies by running this file in terminal.
 
 ### Setup
 
@@ -92,7 +91,7 @@ Automatically detects whether inputs are files or folders and handles them appro
 ## Troubleshooting
 
 1. Context menu not appearing
-    - Ensure you ran register.bat as Administrator
+    - Ensure you ran `repair-context.bat` as Administrator
     - Restart Windows Explorer (Task Manager → Windows Explorer → Restart)
 
 2. Script crashes immediately
