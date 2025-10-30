@@ -16,7 +16,6 @@ Supported format: `pdf`, `png`, `jpeg`, `jpg`.
 ## Installation
 
 - Install Python 3.6+
-- Install dependencies by running this file in terminal.
 
 ### Setup
 
