@@ -29,3 +29,5 @@ if %ERRORLEVEL% NEQ 0 (
 echo.
 echo Installation completed successfully.
 pause
+
+python register-context.py

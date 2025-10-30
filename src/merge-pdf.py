@@ -51,9 +51,9 @@ def add_pdf(writer: PdfWriter, filepath: Path, pages: Union[List[int], None]):
             if 0 <= page_num < total:
                 writer.add_page(reader.pages[page_num])
             else:
-                log(f"⚠️ Skipping invalid page {page_num+1} in {filepath.name}")
+                log(f"Skipping invalid page {page_num+1} in {filepath.name}")
     except Exception as e:
-        log(f"❌ Error adding PDF {filepath}: {e}")
+        log(f"Error adding PDF {filepath}: {e}")
         raise
 
 
@@ -66,7 +66,7 @@ def add_image(writer: PdfWriter, filepath: Path):
         writer.add_page(reader.pages[0])
         tmp_path.unlink(missing_ok=True)
     except Exception as e:
-        log(f"❌ Error adding image {filepath}: {e}")
+        log(f"Error adding image {filepath}: {e}")
         raise
 
 
@@ -82,13 +82,13 @@ def handle_merge_mode(inputs: List[str], output_path: str):
                 try:
                     pages = parse_page_spec(match.group(3))
                 except Exception as e:
-                    log(f"❌ Page spec error in {item}: {e}")
+                    log(f"Page spec error in {item}: {e}")
                     continue
         else:
             filepath = Path(item).expanduser().resolve()
 
         if not filepath.exists():
-            log(f"❌ File not found: {filepath}")
+            log(f"File not found: {filepath}")
             continue
 
         if filepath.suffix.lower() in ['.png', '.jpg', '.jpeg']:
@@ -96,18 +96,18 @@ def handle_merge_mode(inputs: List[str], output_path: str):
         elif filepath.suffix.lower() == '.pdf':
             add_pdf(writer, filepath, pages)
         else:
-            log(f"❌ Unsupported file type: {filepath}")
+            log(f"Unsupported file type: {filepath}")
 
     with open(output_path, 'wb') as f:
         writer.write(f)
-    log(f"✅ Merged PDF written to: {output_path}")
+    log(f"Merged PDF written to: {output_path}")
 
 
 def handle_blob_mode(blob_dir: str, output_path: str):
     writer = PdfWriter()
     dir_path = Path(blob_dir).expanduser().resolve()
     if not dir_path.is_dir():
-        log(f"❌ Directory not found: {blob_dir}")
+        log(f"Directory not found: {blob_dir}")
         return
 
     files = sorted(dir_path.glob("*"))
@@ -119,7 +119,7 @@ def handle_blob_mode(blob_dir: str, output_path: str):
 
     with open(output_path, 'wb') as f:
         writer.write(f)
-    log(f"✅ Blob PDF created from folder: {output_path}")
+    log(f"Blob PDF created from folder: {output_path}")
 
 
 def handle_auto_mode(inputs: List[str]):
@@ -130,7 +130,7 @@ def handle_auto_mode(inputs: List[str]):
         log(f"=== Starting auto mode with inputs: {inputs}")
         
         if not inputs:
-            log("❌ No inputs provided.")
+            log("No inputs provided.")
             input("Press Enter to exit...")
             return
         
@@ -146,12 +146,12 @@ def handle_auto_mode(inputs: List[str]):
                 dirs.append(p)
                 log(f"  -> Added as directory")
             else:
-                log(f"⚠️ Skipping unsupported item: {p}")
+                log(f"Skipping unsupported item: {p}")
 
         log(f"Found {len(files)} files and {len(dirs)} directories")
 
         if not files and not dirs:
-            log("❌ No valid inputs found.")
+            log("No valid inputs found.")
             input("Press Enter to exit...")
             return
 
@@ -190,7 +190,7 @@ def handle_auto_mode(inputs: List[str]):
         log(f"Total pages to merge: {page_count}")
 
         if page_count == 0:
-            log("❌ No valid PDF/image content found to merge.")
+            log("No valid PDF/image content found to merge.")
             input("Press Enter to exit...")
             return
 
@@ -216,21 +216,21 @@ def handle_auto_mode(inputs: List[str]):
         with open(output_path, 'wb') as f:
             writer.write(f)
 
-        log(f"✅ Successfully merged {page_count} pages into: {output_path}")
+        log(f"Successfully merged {page_count} pages into: {output_path}")
         
         # Open the generated PDF
         try:
             os.startfile(str(output_path))
             log("PDF opened successfully")
         except Exception as e:
-            log(f"⚠️ Could not open PDF automatically: {e}")
+            log(f"Could not open PDF automatically: {e}")
         
         # Keep window open for 2 seconds to show success message
         import time
         time.sleep(2)
         
     except Exception as e:
-        log(f"❌ FATAL ERROR in handle_auto_mode: {e}")
+        log(f"FATAL ERROR in handle_auto_mode: {e}")
         log(f"Traceback: {traceback.format_exc()}")
         input("Press Enter to exit...")
 
@@ -252,12 +252,12 @@ def main():
 
         if args.merge:
             if not args.output:
-                log("❌ Output path required for -merge mode.")
+                log("Output path required for -merge mode.")
                 return
             handle_merge_mode(args.merge, args.output)
         elif args.blob:
             if not args.output:
-                log("❌ Output path required for -blob mode.")
+                log("Output path required for -blob mode.")
                 return
             handle_blob_mode(args.blob, args.output)
         elif args.auto:
@@ -266,7 +266,7 @@ def main():
             parser.print_help()
             
     except Exception as e:
-        log(f"❌ FATAL ERROR in main: {e}")
+        log(f"FATAL ERROR in main: {e}")
         log(f"Traceback: {traceback.format_exc()}")
         input("Press Enter to exit...")
 
